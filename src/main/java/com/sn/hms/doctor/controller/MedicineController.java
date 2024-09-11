@@ -3,17 +3,18 @@ package com.sn.hms.doctor.controller;
 import com.sn.hms.doctor.entity.Medicine;
 import com.sn.hms.doctor.service.MedicineService;
 import com.sn.hms.exception.ResourceNotFoundException;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/medicine")
+@CrossOrigin(origins = "http://localhost:4200")
 public class MedicineController {
 
     @Autowired
@@ -23,7 +24,7 @@ public class MedicineController {
     public ResponseEntity<Object> insertMedicine(@Valid @RequestBody Medicine medicine) {
         try {
             Medicine savedMedicine = medicineService.createMedicine(medicine);
-            return ResponseEntity.status(HttpStatus.CREATED).body("Medicine with ID " +savedMedicine.getId()+" and Drugs Id "+ savedMedicine.getMedicineId() + " added successfully.");
+            return ResponseEntity.status(HttpStatus.CREATED).body("Medicine with ID " + savedMedicine.getId() + " and Drugs ID " + savedMedicine.getMedicineId() + " added successfully.");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to add medicine: " + e.getMessage());
         }
@@ -38,8 +39,6 @@ public class MedicineController {
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Medicine with ID " + id + " not found.");
             }
-        } catch (ResourceNotFoundException ex) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Medicine with ID " + id + " not found.");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to retrieve medicine: " + e.getMessage());
         }
@@ -71,7 +70,7 @@ public class MedicineController {
     public ResponseEntity<Object> deleteMedicine(@PathVariable Long id) {
         try {
             medicineService.deleteMedicineById(id);
-            return ResponseEntity.status(HttpStatus.OK).body("Medicine with ID " + id + " is deleted Successfully.");
+            return ResponseEntity.ok("Medicine with ID " + id + " is deleted Successfully.");
         } catch (ResourceNotFoundException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Medicine with ID " + id + " not found for deletion.");
         } catch (Exception e) {
@@ -82,11 +81,11 @@ public class MedicineController {
     @GetMapping("/findByDrugsName/{drugsName}")
     public ResponseEntity<Object> findByDrugsName(@PathVariable String drugsName) {
         try {
-            Optional<Medicine> medicine = medicineService.findByDrugsName(drugsName);
-            if (medicine.isPresent()) {
-                return ResponseEntity.ok(medicine.get());
+            Optional<Medicine> medicines = medicineService.findByDrugsName(drugsName);
+            if (!medicines.isEmpty()) {
+                return ResponseEntity.ok(medicines);
             } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Medicine with drugs name '" + drugsName + "' not found.");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No medicines found with drugs name '" + drugsName + "'.");
             }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to find medicine by drugs name: " + e.getMessage());
